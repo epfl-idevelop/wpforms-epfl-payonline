@@ -43,9 +43,67 @@ class WPForms_EPFL_Payonline extends WPForms_Payment {
 
 		// Plugin details
 		add_filter('plugins_api', array( $this, 'wpforms_epfl_payonline_plugin_info' ), 20, 3);
+		
+		
+		//add_filter( 'wpforms_payments_addons',  array( $this, 'filter_payments_addons'), 10, 1  );
+		
+		// Add HTML to print preview, see wpforms/src/Pro/Admin/Entries/PrintPreview.php
+		add_action( 'wpforms_pro_admin_entries_printpreview_print_html_head', array( $this, 'print_html_head' ), 10, 2 );
+		add_action( 'wpforms_pro_admin_entries_printpreview_print_html_header_before', array( $this, 'html_header_before' ), 10, 2 );
+		add_action( 'wpforms_pro_admin_entries_printpreview_print_html_header_after', array( $this, 'html_header_after' ), 10, 2 );
+		add_action( 'wpforms_pro_admin_entries_printpreview_print_html_fields_after', array( $this, 'html_fields_after' ), 10, 2 );
+		add_action( 'wpforms_pro_admin_entries_printpreview_print_html_notes_after', array( $this, 'html_notes_after' ), 10, 2 );
 
 	}
 
+	/* 
+	 * Use this hook to add information in the print preview <head></head>, such as CSS or JS.	
+	 */
+	function print_html_head($entry, $frm_data) {
+		echo '
+			<script src="https://html2canvas.hertzen.com/dist/html2canvas.js"></script>
+			<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.5.3/jspdf.debug.js" integrity="sha384-NaWTHo/8YCBYJ59830LTz/P4aQZK1sS0SneOgAvhsIl3zBu8r9RevNg5lHCHAuQ/" crossorigin="anonymous"></script>
+';
+	}
+
+function html_header_before($entry, $frm_data) {
+	error_log(var_export($entry, true));
+	error_log(var_export($frm_data, true));
+	echo "<h1>HEADER BEFORE</h1>";
+
+}
+function html_header_after($entry, $frm_data) {
+	error_log(var_export($entry, true));
+	error_log(var_export($frm_data, true));
+	echo "<h1>HEADER AFTER</h1>";
+}
+function html_fields_after($entry, $frm_data) {
+	error_log(var_export($entry, true));
+	error_log(var_export($frm_data, true));
+	echo "<h1>FIELDS AFTER</h1>";
+}
+function html_notes_after($entry, $frm_data) {
+	error_log(var_export($entry, true));
+	error_log(var_export($frm_data, true));
+	echo "<h1>NOTE AFTER</h1>";
+ $test = <<<SCRIPT
+		<script>
+			function printPDF() {
+				var printDoc = new jsPDF();
+				printDoc.fromHTML(document.body, 10, 10, {'width': 180});
+				printDoc.autoPrint();
+				printDoc.output("dataurlnewwindow"); // this opens a new popup,  after this the PDF opens the print window view but there are browser inconsistencies with how this is handled
+			}
+		</script>
+SCRIPT;
+  echo $test;
+	echo '<button type="button" onclick="printPDF()">Print Form</button>';
+}
+function filter_payments_addons($var) {
+	error_log(var_export($var, true));
+	return [];
+}
+	
 	/**
 	 * Process and submit entry to provider.
 	 *
@@ -450,6 +508,17 @@ class WPForms_EPFL_Payonline extends WPForms_Payment {
 	 *
 	 */
 	public function filter_has_payment_gateway( $form_data ) {
+
+			error_log(var_export($form_data, true));
+		// 		// PayPal Standard check.
+		// if ( ! empty( $form_data['payments']['paypal_standard']['enable'] ) ) {
+		// 	return true;
+		// }
+		// 
+		// // Stripe Check.
+		// if ( ! empty( $form_data['payments']['stripe']['enable'] ) ) {
+		// 	return true;
+		// }
 		if ( ! empty( $form_data['payments']['epfl_payonline']['enable'] ) ) {
 			return true;
 		}
